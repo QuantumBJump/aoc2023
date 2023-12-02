@@ -147,7 +147,6 @@ fn evaluate_handful(handful: String) -> (usize, usize, usize) {
             _ => panic!("unexpected colour {}!", colour),
         }
     }
-    println!("handful: ({}, {}, {})", red, green, blue);
     return (red, green, blue)
 }
 
@@ -160,12 +159,6 @@ fn evaluate_game_2(game: String) -> usize {
         if nums.1 > green { green = nums.1 };
         if nums.2 > blue { blue = nums.2 };
     }
-    println!("Minimum cubes needed:");
-    println!("\tRed: {}", red);
-    println!("\tGreen: {}", green);
-    println!("\tBlue: {}", blue);
-    println!("power: {}", red * green * blue);
-    println!();
     return red * green * blue;
 }
 
