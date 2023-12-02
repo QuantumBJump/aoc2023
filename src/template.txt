@@ -1,0 +1,30 @@
+use std::time::Instant;
+
+use aoc2023::reader;
+
+fn main() {
+    if let Ok(lines) = reader::read_lines("./inputs/2.txt".to_owned()) {
+        part_1(lines.clone());
+        part_2(lines.clone());
+    } else {
+        println!("oopsie~!");
+    }
+}
+
+fn part_1(lines: Vec<String>) {
+    let start = Instant::now();
+    println!("Part 1");
+
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
+    println!();
+}
+
+fn part_2(lines: Vec<String>) {
+    let start = Instant::now();
+    println!("Part 1");
+
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
+    println!();
+}
