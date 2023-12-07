@@ -15,6 +15,8 @@ fn part_1(lines: Vec<String>) {
     let start = Instant::now();
     println!("Part 1");
 
+
+
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
     println!();
@@ -23,6 +25,8 @@ fn part_1(lines: Vec<String>) {
 fn part_2(lines: Vec<String>) {
     let start = Instant::now();
     println!("Part 1");
+
+
 
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
