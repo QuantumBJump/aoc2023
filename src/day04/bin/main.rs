@@ -1,5 +1,5 @@
+use std::collections::{HashSet, HashMap};
 use std::time::Instant;
-use std::collections::HashSet;
 
 use aoc2023::reader;
 
@@ -12,15 +12,18 @@ fn main() {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Scratchcard {
     winning: HashSet<usize>,
     actual: Vec<usize>,
+    copies: usize,
 }
 
-fn read_scratchcard(card: String) -> Scratchcard {
+fn read_scratchcard(card: String) -> (usize, Scratchcard) {
     // Remove the "Game X:" from the front
-    let numbers = card.split_once(':').unwrap().1;
+    let (mut game, numbers) = card.split_once(':').unwrap();
+    game = game.strip_prefix("Card ").unwrap().trim();
+    let game = game.parse::<usize>().unwrap();
     let (winning_nums, actual_nums) = numbers.split_once('|').unwrap();
 
     // Read winning numbers
@@ -31,29 +34,41 @@ fn read_scratchcard(card: String) -> Scratchcard {
     // Read actual numbers
     let actual = read_numlist(actual_nums.trim().to_string());
 
-    Scratchcard{
-        winning,
-        actual,
-    }
+    (game, Scratchcard { winning, actual, copies: 1 })
 }
 
 fn read_numlist(list: String) -> Vec<usize> {
-    list.split(' ').filter(|x| !x.is_empty()).map(|x| x.parse().unwrap()).collect()
+    list.split(' ')
+        .filter(|x| !x.is_empty())
+        .map(|x| x.parse().unwrap())
+        .collect()
 }
 
 impl Scratchcard {
-    fn calculate_score(self) -> usize {
+    fn count_wins(&self) -> usize {
         let mut matches = 0;
-        for num in self.actual {
+        for num in &self.actual {
             if self.winning.contains(&num) {
                 matches += 1;
             }
         }
-        match matches {
+        matches
+    }
+
+    fn calculate_score(&self) -> usize {
+        match self.count_wins() {
             0 => 0,
             1 => 1,
-            _ => 1 << matches - 1,
+            _ => 1 << self.count_wins() - 1,
         }
+    }
+
+    fn set_copies(&mut self, num: usize) {
+        self.copies = num;
+    }
+
+    fn add_copies(&mut self, num: usize) {
+        self.copies += num;
     }
 }
 
@@ -70,10 +85,9 @@ fn part_1(lines: Vec<String>) {
     // GOAL: sum each card's point totals
     let mut total = 0;
     for line in lines {
-        let sc = read_scratchcard(line);
+        let (_, sc) = read_scratchcard(line);
         total += sc.calculate_score();
     }
-
 
     println!("Total: {}", total);
     let duration = start.elapsed();
@@ -85,8 +99,30 @@ fn part_2(lines: Vec<String>) {
     let start = Instant::now();
     println!("Part 1");
 
+    let mut total = 0;
+
+    let mut cards: Vec<Scratchcard> = Vec::new();
+    for line in lines {
+        let (_, mut v) = read_scratchcard(line);
+        v.set_copies(1);
+        cards.push(v);
+    }
+
+    let len = cards.len();
+    for idx in 0..cards.len() {
+        let card = cards[idx].clone();
+        total += card.copies;
+        let wins = card.count_wins();
+        for i in 1..=wins {
+            if idx+i >= len {
+                break;
+            }
+            cards[idx+i].add_copies(card.copies);
+        }
+    }
 
 
+    println!("Total: {}", total);
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
     println!();
@@ -98,17 +134,20 @@ mod tests {
 
     #[test]
     fn test_calculate_score() {
-        let card1 = Scratchcard{
+        let card1 = Scratchcard {
             winning: HashSet::from([41, 48, 83, 86, 17]),
             actual: vec![83, 86, 6, 31, 17, 9, 48, 53],
+            copies: 0,
         };
-        let card2 = Scratchcard{
+        let card2 = Scratchcard {
             winning: HashSet::from([13, 32, 20, 16, 61]),
             actual: vec![61, 30, 68, 82, 17, 32, 24, 19],
+            copies: 0,
         };
-        let card3 = Scratchcard{
+        let card3 = Scratchcard {
             winning: HashSet::from([41, 92, 73, 84, 69]),
             actual: vec![59, 84, 76, 51, 58, 5, 53, 83],
+            copies: 0,
         };
 
         assert_eq!(8, card1.calculate_score());
@@ -122,9 +161,10 @@ mod tests {
         let sc1 = Scratchcard {
             winning: HashSet::from([41, 48, 83, 86, 17]),
             actual: vec![83, 86, 6, 31, 17, 9, 48, 53],
+            copies: 0,
         };
 
-        assert_eq!(read_scratchcard(card1), sc1);
+        assert_eq!(read_scratchcard(card1), (1, sc1));
     }
 
     #[test]
